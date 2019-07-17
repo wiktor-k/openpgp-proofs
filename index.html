@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>OpenPGP Key lookup</title>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+<!-- display only this key:
+<link rel=pgpkey href="https://metacode.biz/.well-known/openpgpkey/hu/gebusffkx9g581i6ch4t3ewgwd6dctmp">
+-->
+<meta name=keyserver content=keys.openpgp.org>
+<style>
+    body { line-height: 1.7; max-width: 800px; margin: 0 auto}
+    main { margin: 20px; }
+    .props { list-style-type: none; margin-left: 0; padding-left: 0; }
+    i { padding-right: 5px; }
+    .proof { font-size: small; margin-left: 10px; color: #73a6ff }
+    .verification { font-size: small; margin-left: 5px; cursor: pointer }
+    summary { cursor: pointer }
+    .verified { color: green }
+    .verified::before { content: "✅"; margin-right: 5px; }
+    .avatar { width: 148px; height: 148px; border-radius: 74px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    h2 { text-align: center; line-height: 1.5 }
+    .wrapper { margin: 40px 0; }
+    .wrapper > div { margin: 20px; }
+    textarea { width: 100%; height: 200px; }
+    .note { font-size: small }
+    img { vertical-align: top }
+    @media (min-width: 600px) {
+      .wrapper {
+        display: flex;
+        width: 100%;
+      }
+      .wrapper .bio {
+        width: 35%;
+      }
+    }
+</style>
+<script src="node_modules/openpgp/dist/openpgp.min.js"></script>
+<script>
+var System = {
+    _deps: { openpgp: window.openpgp },
+    register(name, deps, callback) {
+        const exports = Object.create(null);
+        const result = callback((name, value) => exports[name] = value);
+        for (let i = 0; i < deps.length; i++) {
+            result.setters[i](this._deps[deps[i]]);
+        }
+        result.execute();
+        this._deps[name] = exports;
+    }
+};
+</script>
+<script src="scripts.js"></script>
+<body>
+    <main>
+      <section id="content">
+        <div id=result>Loading key...</div>
+      </section>
+      <section class="note">
+        <p>Note: contents of this page are generated purely from the OpenPGP key in your browser.
+        If you want to add social proofs to your key see <a href="https://metacode.biz/openpgp/proofs">OpenPGP Proofs</a> page.</p>
+        <p>If you want to adjust the keyserver used or the key being displayed just edit this HTML page.</p>
+      </section>
+    </main>
+</body>
+</html>

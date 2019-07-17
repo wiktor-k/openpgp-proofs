@@ -1,0 +1,142 @@
+{
+  "version": 5.0,
+  "proofs": [
+    {
+      "matcher": "^https://gist.github.com/([A-Za-z0-9_-]+)/([0-9a-f]+)$",
+      "variables": {
+        "USERNAME": 1,
+        "PROOFID": 2
+      },
+      "profile": "https://github.com/{USERNAME}",
+      "proof": "https://api.github.com/gists/{PROOFID}",
+      "username": "{USERNAME}",
+      "service": "github",
+      "checks": [
+        {
+          "relation": "eq",
+          "proof": [
+            "owner",
+            "login"
+          ],
+          "claim": "{USERNAME}"
+        },
+        {
+          "relation": "eq",
+          "proof": [
+            "owner",
+            "html_url"
+          ],
+          "claim": "https://github.com/{USERNAME}"
+        },
+        {
+          "relation": "contains",
+          "proof": [
+            "files",
+            "openpgp.md",
+            "content"
+          ],
+          "claim": "[Verifying my OpenPGP key: openpgp4fpr:{FINGERPRINT}]"
+        }
+      ]
+    },
+    {
+      "matcher": "^https://news.ycombinator.com/user\\?id=([A-Za-z0-9-]+)$",
+      "variables": {
+        "USERNAME": 1,
+        "PROFILE": 0
+      },
+      "profile": "{PROFILE}",
+      "proof": "https://hacker-news.firebaseio.com/v0/user/{USERNAME}.json",
+      "username": "{USERNAME}",
+      "service": "hackernews",
+      "checks": [
+        {
+          "relation": "contains",
+          "proof": [
+            "about"
+          ],
+          "claim": "[Verifying my OpenPGP key: openpgp4fpr:{FINGERPRINT}]"
+        }
+      ]
+    },
+    {
+      "matcher": "^https://www.reddit.com/user/([^/]+)/comments/([^/]+)/([^/]+/)?$",
+      "variables": {
+        "USERNAME": 1,
+        "PROOF": 2
+      },
+      "profile": "https://www.reddit.com/user/{USERNAME}",
+      "proof": "https://www.reddit.com/user/{USERNAME}/comments/{PROOF}.json",
+      "username": "{USERNAME}",
+      "service": "reddit",
+      "checks": [
+        {
+          "relation": "contains",
+          "proof": [
+            0,
+            "data",
+            "children",
+            0,
+            "data",
+            "selftext"
+          ],
+          "claim": "Verifying my OpenPGP key: openpgp4fpr:{FINGERPRINT}"
+        },
+        {
+          "relation": "eq",
+          "proof": [
+            0,
+            "data",
+            "children",
+            0,
+            "data",
+            "author"
+          ],
+          "claim": "{USERNAME}"
+        }
+      ]
+    },
+    {
+      "matcher": "^https://([^/]+)/@([A-Za-z0-9_-]+)$",
+      "variables": {
+        "INSTANCE": 1,
+        "USERNAME": 2,
+        "PROFILE": 0
+      },
+      "profile": "{PROFILE}",
+      "proof": "{PROFILE}",
+      "username": "@{USERNAME}@{INSTANCE}",
+      "service": "mastodon",
+      "checks": [
+        {
+          "relation": "oneOf",
+          "proof": [
+            "attachment",
+            "value"
+          ],
+          "claim": "{FINGERPRINT}"
+        }
+      ]
+    },
+    {
+      "matcher": "^dns:([^?]+)\\?type=TXT$",
+      "variables": {
+        "DOMAIN": 1
+      },
+      "profile": "https://{DOMAIN}",
+      "proof": "https://dns.google.com/resolve?name={DOMAIN}&type=TXT",
+      "username": "{DOMAIN}",
+      "service": "dns",
+      "checks": [
+        {
+          "relation": "oneOf",
+          "proof": [
+            "Answer",
+            "data"
+          ],
+          "claim": "\"openpgp4fpr:{FINGERPRINT}\""
+        }
+      ]
+    }
+  ]
+}
