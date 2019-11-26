@@ -40,6 +40,9 @@ async function parseKey(buffer: Buffer) {
 }
 
 async function verifyIdentifies() {
+    if (typeof process === 'undefined') {
+        return;
+    }
     const good = '\x1b[32;1m✓\x1b[0m';
     const bad = '\x1b[31;1m✗\x1b[0m';
     const key = await readStdinToBuffer();
