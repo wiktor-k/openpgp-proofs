@@ -302,6 +302,9 @@ System.register("ui", ["local", "openpgp"], function (exports_5, context_5) {
                             local.createElement("a", { rel: "me noopener nofollow", target: "_blank", href: proof.profile },
                                 local.createElement("i", { class: serviceToClassName(proof.service) }),
                                 proof.username),
+                            proof.service === 'mastodon' ?
+                                local.createElement("a", { rel: "noopener nofollow", href: "#follow", class: "follow", "data-profile": proof.profile }, "follow")
+                                : null,
                             local.createElement("a", { rel: "noopener nofollow", target: "_blank", href: proof.proofUrl, class: "proof", "data-proof-json": proof.proofJson, "data-checks": JSON.stringify(proof.checks) },
                                 local.createElement("i", { class: "fas fa-certificate" }),
                                 "proof")))))),
@@ -446,7 +449,8 @@ System.register("openpgp-key", ["local", "renderer", "verifier", "openpgp", "ui"
                 algorithmInfo: key.primaryKey.getAlgorithmInfo(),
                 expirationTime: lastPrimarySig.getExpirationTime()
             }];
-        const p = (await (await fetch('proofs.json')).json()).proofs;
+        const proofsUrl = document.querySelector('meta[name="proofs"]').content;
+        const p = (await (await fetch(proofsUrl)).json()).proofs;
         const notations = lastPrimarySig.notations || [];
         const proofs = notations
             .filter(notation => notation[0] === 'proof@metacode.biz' && typeof notation[1] === 'string')
@@ -493,7 +497,7 @@ System.register("openpgp-key", ["local", "renderer", "verifier", "openpgp", "ui"
             const url = proofLink.dataset.proofJson || '';
             try {
                 await verifier_2.verify(await verifier_2.getJson(url), checks);
-                proofLink.textContent = 'verified proof';
+                proofLink.textContent = 'verified';
                 proofLink.classList.add('verified');
             }
             catch (e) {
@@ -527,6 +531,39 @@ System.register("openpgp-key", ["local", "renderer", "verifier", "openpgp", "ui"
             });
             console.log(verified);
             alert('The signature is ' + (verified.signatures[0].valid ? '✅ correct.' : '❌ incorrect.'));
+        }
+        else if (target.classList.contains('follow')) {
+            e.preventDefault();
+            const url = target.dataset.profile;
+            const handle = (prompt(`You are going to follow ${url}.\n\nEnter your username@domain to proceed.`) || '');
+            if (!handle) {
+                return;
+            }
+            const parts = handle.split('@');
+            const domain = encodeURIComponent(parts.pop() || '');
+            const username = encodeURIComponent(parts.pop() || '');
+            if (!domain || !username) {
+                alert('Could not recognize account: ' + handle);
+                return;
+            }
+            fetch(`https://${domain}/.well-known/webfinger?resource=acct:${username}@${domain}`, {
+                headers: {
+                    accept: 'application/json'
+                }
+            }).then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Request failed: ' + response.statusText);
+            }).then(json => {
+                const { template } = json.links.filter((link) => link.rel === 'http://ostatus.org/schema/1.0/subscribe')[0];
+                if (!template) {
+                    throw new Error('No subscription address.');
+                }
+                location.href = template.replace('{uri}', encodeURIComponent(url) || '');
+            }).catch(e => {
+                alert('Could not complete action: ' + e);
+            });
         }
     }
     return {

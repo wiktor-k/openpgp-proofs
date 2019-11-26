@@ -97,7 +97,8 @@ async function loadKeys(keyUrl: string, _keys: any) {
         expirationTime: lastPrimarySig.getExpirationTime()
     }];
 
-    const p = (await (await fetch('proofs.json')).json()).proofs;
+    const proofsUrl = (document.querySelector('meta[name="proofs"]') as HTMLMetaElement).content;
+    const p = (await (await fetch(proofsUrl)).json()).proofs;
     const notations: [string, any][] = lastPrimarySig.notations || [];
     const proofs = notations
         .filter(notation => notation[0] === 'proof@metacode.biz' && typeof notation[1] === 'string')
@@ -147,8 +148,8 @@ async function checkProofs() {
         const checks = JSON.parse(proofLink.dataset.checks || '');
         const url = proofLink.dataset.proofJson || '';
         try {
-            await verify(url, checks);
-            proofLink.textContent = 'verified proof';
+            await verify(await getJson(url), checks);
+            proofLink.textContent = 'verified';
             proofLink.classList.add('verified');
         } catch(e) {
             console.error('Could not verify proof: ' + e);
@@ -180,6 +181,38 @@ async function clickElement(this: any, e: Event) {
         });
         console.log(verified);
         alert('The signature is ' + (verified.signatures[0].valid ? '✅ correct.' : '❌ incorrect.'));
+    } else if (target.classList.contains('follow')) {
+        e.preventDefault();
+        const url = target.dataset.profile;
+        const handle: string = (prompt(`You are going to follow ${url}.\n\nEnter your username@domain to proceed.`) || '');
+        if (!handle) {
+            return;
+        }
+        const parts = handle.split('@');
+        const domain = encodeURIComponent(parts.pop() || '');
+        const username = encodeURIComponent(parts.pop() || '');
+        if (!domain || !username) {
+            alert('Could not recognize account: ' + handle);
+            return;
+        }
+        fetch(`https://${domain}/.well-known/webfinger?resource=acct:${username}@${domain}`, {
+            headers: {
+                accept: 'application/json'
+            }
+        }).then(response => {
+            if (response.ok) {
+                return response.json()
+            }
+            throw new Error('Request failed: ' + response.statusText);
+        }).then(json => {
+            const { template } = json.links.filter((link: any) => link.rel === 'http://ostatus.org/schema/1.0/subscribe')[0];
+            if (!template) {
+                throw new Error('No subscription address.');
+            }
+            location.href = template.replace('{uri}', encodeURIComponent(url) || '');
+        }).catch(e => {
+            alert('Could not complete action: ' + e);
+        });
     }
 }
 

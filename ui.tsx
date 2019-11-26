@@ -93,6 +93,9 @@ export function renderInfo(keyUrl: string, name: string, emails: string[], profi
         <li>
             <a rel="me noopener nofollow" target="_blank" href={proof.profile}>
             <i class={serviceToClassName(proof.service)}></i>{proof.username}</a>
+            {proof.service === 'mastodon' ?
+            <a rel="noopener nofollow" href="#follow" class="follow" data-profile={proof.profile}>follow</a>
+            : null}
             <a rel="noopener nofollow" target="_blank" href={proof.proofUrl} class="proof" data-proof-json={proof.proofJson} data-checks={JSON.stringify(proof.checks)}>
             <i class="fas fa-certificate"></i>proof</a>
             </li>
