@@ -74,3 +74,16 @@ export async function verify(json: any, checks: any[]) {
         }
     }
 }
+
+export async function getJson(url: string) {
+    const response = await fetch(url, {
+        headers: {
+            Accept: 'application/json'
+        },
+        credentials: 'omit'
+    });
+    if (!response.ok) {
+        throw new Error('Response failed: ' + response.status);
+    }
+    return response.json();
+}

@@ -55,15 +55,28 @@ System.register("verifier", [], function (exports_1, context_1) {
         }
     }
     exports_1("verify", verify);
+    async function getJson(url) {
+        const response = await fetch(url, {
+            headers: {
+                Accept: 'application/json'
+            },
+            credentials: 'omit'
+        });
+        if (!response.ok) {
+            throw new Error('Response failed: ' + response.status);
+        }
+        return response.json();
+    }
+    exports_1("getJson", getJson);
     return {
         setters: [],
         execute: function () {
         }
     };
 });
-System.register("index", ["openpgp", "verifier", "node-fetch"], function (exports_2, context_2) {
+System.register("index", ["openpgp", "verifier"], function (exports_2, context_2) {
     "use strict";
-    var openpgp, verifier_1, fetch;
+    var openpgp, verifier_1;
     var __moduleName = context_2 && context_2.id;
     function readStdinToBuffer() {
         return new Promise((resolve, reject) => {
@@ -79,18 +92,6 @@ System.register("index", ["openpgp", "verifier", "node-fetch"], function (export
             });
             process.stdin.on('error', e => reject(e));
         });
-    }
-    async function getJson(url) {
-        const response = await fetch(url, {
-            headers: {
-                Accept: 'application/json'
-            },
-            credentials: 'omit'
-        });
-        if (!response.ok) {
-            throw new Error('Response failed: ' + response.status);
-        }
-        return response.json();
     }
     async function parseKey(buffer) {
         const key = (await openpgp.key.read(buffer)).keys[0];
@@ -119,7 +120,7 @@ System.register("index", ["openpgp", "verifier", "node-fetch"], function (export
         }
         let allPassed = true;
         for (const proof of things.proofs) {
-            const json = await getJson(proof.proofJson);
+            const json = await verifier_1.getJson(proof.proofJson);
             let passed = false, error = null;
             try {
                 await verifier_1.verify(json, proof.checks);
@@ -143,9 +144,6 @@ System.register("index", ["openpgp", "verifier", "node-fetch"], function (export
             },
             function (verifier_1_1) {
                 verifier_1 = verifier_1_1;
-            },
-            function (fetch_1) {
-                fetch = fetch_1;
             }
         ],
         execute: function () {
@@ -491,7 +489,7 @@ System.register("openpgp-key", ["local", "renderer", "verifier", "openpgp", "ui"
             const checks = JSON.parse(proofLink.dataset.checks || '');
             const url = proofLink.dataset.proofJson || '';
             try {
-                await verifier_2.verify(url, checks);
+                await verifier_2.verify(await verifier_2.getJson(url), checks);
                 proofLink.textContent = 'verified proof';
                 proofLink.classList.add('verified');
             }

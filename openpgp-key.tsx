@@ -16,7 +16,7 @@
 
 import local = require('./local');
 import renderer = require('./renderer');
-import { verify, getVerifier, VerifierProof } from './verifier';
+import { verify, getVerifier, VerifierProof, getJson } from './verifier';
 import * as openpgp from 'openpgp';
 import * as ui from './ui';
 

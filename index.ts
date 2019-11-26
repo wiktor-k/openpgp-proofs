@@ -1,5 +1,5 @@
 import * as openpgp from 'openpgp';
-import { verify, getVerifier, VerifierProof } from './verifier';
+import { verify, getVerifier, VerifierProof, getJson } from './verifier';
 import * as fetch from 'node-fetch';
 
 function readStdinToBuffer(): Promise<Buffer> {
@@ -19,19 +19,6 @@ function readStdinToBuffer(): Promise<Buffer> {
       process.stdin.on('error', e => reject(e));
     });
   };
-
-async function getJson(url: string) {
-    const response = await fetch(url, {
-        headers: {
-            Accept: 'application/json'
-        },
-        credentials: 'omit'
-    });
-    if (!response.ok) {
-        throw new Error('Response failed: ' + response.status);
-    }
-    return response.json();
-}
 
 async function parseKey(buffer: Buffer) {
     const key = (await openpgp.key.read(buffer)).keys[0];
