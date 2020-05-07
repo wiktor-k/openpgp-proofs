@@ -110,3 +110,12 @@ If you host a service and would like to add the ability for users to prove that 
 
 2. Add an entry to `proofs.json` describing how to extract data (username and key fingerprint) from that document.
 
+## FAQ
+
+1. Q: Why the notation name is `proof@metacode.biz`? Should I replace it with my own e-mail / domain?
+
+A: Nope. This e-mail-like string is actually notation key. RFC 4880 specifies [this kind of format](https://tools.ietf.org/html/rfc4880#section-5.2.3.16) as a way to namespace custom notations. You need to create notations under the domain that you own to avoid conflicts. I used my own domain for this protocol. Ideally the notation key would be just `proof`. Using this kind of keys (without `@` namespacing) is only allowed for IETF-approved extensions though (I did not approach them).
+
+2. Q: Why aren't proof documents cleartext signed like in Keybase?
+
+A: The link to the proof document is already signed with your own key when you add the signature notation. Even if the social site published a different document at that link the fingerprint will never match. Actually the signature is stronger than with Keybase as it requires your primary (master) key with Certify capability while cleartext signatures that Keybase uses require only Signing keys. (This could be important if you store your master keys offline).
