@@ -17,6 +17,6 @@
   },
   "dependencies": {
     "node-fetch": "^2.6.0",
-    "openpgp": "^4.5.3"
+    "openpgp": "^4.10.11"
   }
 }
